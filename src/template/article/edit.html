@@ -1,22 +1,19 @@
-<!DOCTYPE html>
-<html lang="ja">
+{% extends "../layout.html" %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block css %}
+<link rel="stylesheet" href="/css/article/edit.css">
+{% endblock %}
 
-  <link rel="stylesheet" href="/css/article/edit.css">
+{% block js %}
+<script src="/js/article/edit.js"></script>
+{% endblock %}
 
-  <title>MyTechBlog</title>
-</head>
+{% block title %}
+編集 | { block.Super }
+{% endblock %}
 
-<body>
-  <h1>MyTechBlog</h1>
-  <p>{{ Message }}</p>
-  <p>{{ Now }}</p>
-
-  <script src="/js/article/edit.js"></script>
-</body>
-
-</html>
+{% block content %}
+<p>{{ Message }}</p>
+<p>{{ Now }}</p>
+<p>{{ ID }}</p>
+{% endblock %}
