@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', ()=>{
   const inputs = document.getElementsByTagName('input');
   const form = document.forms.namedItem('article-form');
-  const saveBtn = document.querySelector('.artcile-form__save');
+  const saveBtn = document.querySelector('.article-form__save');
   const cancelBtn = document.querySelector('.article-form__cancel');
   const previewOpenBtn = document.querySelector('.article-form__open-preview');
   const previewCloseBtn = document.querySelector('.article-form__close-preview');
@@ -59,4 +59,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // URL を指定して画面を遷移させます。
     window.location.href = url;
   });
+
+  // CSRFトークンの取得
+  const csrfToken = document.getElementsByName('csrf')[0].content;
+
+  // 保存処理の実行イベント
+  saveBtn.addEventListener('click', event => {
+    event.preventDefault();
+
+    const fd = new FormData(form);
+
+    let status;
+
+    fetch(url, {
+      method: method,
+      headers: {'X-CSRF-Token': csrfToken},
+      body: fd,
+    })
+    .then(res => {
+      status = res.status;
+      return res.json();
+    })
+    .then(body => {
+      console.log(JSON.stringify(body));
+
+      if (status === 200) {
+        window.location.href = url;
+      }
+
+      if (body.ValidationErrors) {
+
+      }
+    })
+    .catch(err => console.error(err));
+  });
 });
+

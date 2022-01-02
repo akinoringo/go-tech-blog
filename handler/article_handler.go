@@ -6,10 +6,45 @@ import (
 	"strconv"
 	"time"
 
+	"go-tech-blog/model"
 	"go-tech-blog/repository"
 
 	"github.com/labstack/echo/v4"
 )
+
+type ArticleCreateOutput struct {
+	Article *model.Article
+	Message string
+	ValidationErrors []string
+}
+
+func ArticleCreate(c echo.Context) error {
+	var article model.Article
+
+	var out ArticleCreateOutput
+
+	if err := c.Bind(&article); err != nil {
+		c.Logger().Error(err.Error())
+
+		return c.JSON(http.StatusBadRequest, out)
+	}
+
+	res, err := repository.ArticleCreate(&article)
+	if err != nil {
+		c.Logger().Error(err.Error())
+
+		return c.JSON(http.StatusInternalServerError, out)
+	}
+
+	id, _ := res.LastInsertId()
+
+	article.ID = int(id)
+
+	out.Article = &article
+
+	return c.JSON(http.StatusOK, out)
+
+}
 
 func ArticleIndex(c echo.Context) error {
 	articles, err := repository.ArticleList()
