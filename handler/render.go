@@ -14,6 +14,8 @@ func htmlBlob(file string, data map[string]interface{}) ([]byte, error) {
 }
 
 func render(c echo.Context, file string, data map[string]interface{}) error {
+	data["CSRF"] = c.Get("csrf").(string)
+
 	b, error := htmlBlob(file, data)
 	if error != nil {
 		return c.NoContent(http.StatusInternalServerError)
