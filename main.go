@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var db *sqlx.DB
@@ -53,5 +54,17 @@ func createMux() *echo.Echo {
 	e.Static("/css", "src/css")
 	e.Static("/js", "src/js")
 
+	e.Validator = &CustomValidator{validator: validator.New()}
+
 	return e
+}
+
+// CustomValidator
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+// Validate
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
 }

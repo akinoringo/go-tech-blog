@@ -29,6 +29,14 @@ func ArticleCreate(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, out)
 	}
 
+	if err := c.Validate(&article); err != nil {
+		c.Logger().Error(err.Error())
+
+		out.Message = err.Error()
+
+		return c.JSON(http.StatusUnprocessableEntity, out)
+	}
+
 	res, err := repository.ArticleCreate(&article)
 	if err != nil {
 		c.Logger().Error(err.Error())
