@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const articleFormPreview = document.querySelector('.article-form__preview');
   const articleFormBodyTextArea = document.querySelector('.article-form__input--body');
   const articleFormPreviewTextArea = document.querySelector('.article-form__preview-body-contents');
+  const errors = document.querySelector('.article-form__errors');
+  const errorTmpl = document.querySelector('.article-form__error-tmpl').firstElementChild;
 
   const mode = {method: '', url: ''};
   if (window.location.pathname.endsWith('new')){
@@ -67,6 +69,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   saveBtn.addEventListener('click', event => {
     event.preventDefault();
 
+    errors.innerHTML = null;
+
     const fd = new FormData(form);
 
     let status;
@@ -88,10 +92,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
 
       if (body.ValidationErrors) {
-
+        showErrors(body.ValidationErrors);
       }
     })
     .catch(err => console.error(err));
   });
+
+  const showErrors = messages => {
+    if (Array.isArray(messages) && messages.length != 0) {
+      const fragment = document.createDocumentFragment();
+
+      messages.forEach(message => {
+        const frag = document.createDocumentFragment();
+
+        frag.appendChild(errorTmpl.cloneNode(true));
+
+        frag.querySelector('.article-form__error').innerHTML = message;
+
+        fragment.appendChild(frag);
+      })
+
+      errors.appendChild(fragment);
+    }
+  }
 });
 

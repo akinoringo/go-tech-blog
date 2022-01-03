@@ -32,7 +32,7 @@ func ArticleCreate(c echo.Context) error {
 	if err := c.Validate(&article); err != nil {
 		c.Logger().Error(err.Error())
 
-		out.Message = err.Error()
+		out.ValidationErrors = article.ValidationErrors(err)
 
 		return c.JSON(http.StatusUnprocessableEntity, out)
 	}
