@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -55,16 +54,14 @@ func ArticleCreate(c echo.Context) error {
 }
 
 func ArticleIndex(c echo.Context) error {
-	articles, err := repository.ArticleList()
+	articles, err := repository.ArticleListByCursor(0)
 
 	if err != nil {
-		log.Println(err.Error())
+		c.Logger().Error(err.Error())
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	data := map[string]interface{}{
-		"Message":  "Article Index Update",
-		"Now":      time.Now(),
 		"Articles": articles,
 	}
 

@@ -2,10 +2,15 @@ package repository
 
 import (
 	"database/sql"
+	"math"
+
 	"time"
 	"go-tech-blog/model"
 )
 
+/*
+* 記事の作成
+*/
 func ArticleCreate(article *model.Article) (sql.Result, error) {
 	now := time.Now()
 
@@ -29,11 +34,23 @@ func ArticleCreate(article *model.Article) (sql.Result, error) {
 	return res, nil
 }
 
-func ArticleList() ([]*model.Article, error) {
-	query := `SELECT * FROM articles;`
+/*
+* 記事一覧の取得
+*/
+func ArticleListByCursor(cursor int) ([]*model.Article, error) {
+	if cursor <= 0 {
+		cursor = math.MaxInt32
+	}
 
-	var articles []*model.Article
-	if err := db.Select(&articles, query); err != nil {
+	query := `SELECT *
+	FROM articles
+	WHERE id < ?
+	ORDER BY id desc
+	LIMIT 10`
+
+	articles := make([]*model.Article, 0, 10)
+
+	if err := db.Select(&articles, query, cursor); err != nil {
 		return nil, err
 	}
 
