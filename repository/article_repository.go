@@ -56,3 +56,20 @@ func ArticleListByCursor(cursor int) ([]*model.Article, error) {
 
 	return articles, nil
 }
+
+/*
+* 記事の削除
+*/
+func ArticleDelete(id int) error {
+	query := `DELETE FROM articles WHERE id = ?`
+
+	tx := db.MustBegin()
+
+	if _, err := tx.Exec(query, id); err != nil {
+		tx.Rollback()
+
+		return err
+	}
+
+	return tx.Commit()
+}
