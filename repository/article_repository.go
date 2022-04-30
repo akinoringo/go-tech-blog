@@ -87,3 +87,29 @@ func ArticleGetById(id int) (*model.Article, error) {
 
 	return &article, nil
 }
+
+func ArticleUpdate(article *model.Article) (sql.Result, error) {
+	now := time.Now()
+
+	article.Updated = now
+
+	query := `UPDATE articles
+	SET title = :title,
+						body = :body,
+						updated = :updated
+	WHERE id = :id;`
+
+	tx := db.MustBegin()
+
+	res, err := tx.NamedExec(query, article)
+
+	if err != nil {
+		tx.Rollback()
+
+		return nil, err
+	}
+
+	tx.Commit()
+
+	return res, nil
+}

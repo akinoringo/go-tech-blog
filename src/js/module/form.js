@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mode.url = '/articles';
   } else if (window.location.pathname.endsWith('edit')) {
     mode.method = 'PATCH';
-    mode.url = `/articles/&${window.location.pathname.split('/')[2]}`;
+    mode.url = `/articles/${window.location.pathname.split('/')[2]}`;
   }
   const {method, url} = mode;
 

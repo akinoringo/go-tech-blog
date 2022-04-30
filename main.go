@@ -29,7 +29,8 @@ func main() {
 	e.GET("/articles/:articleId/edit", handler.ArticleEdit)
 	e.GET("/api/articles", handler.ArticleList)
 	e.POST("/api/articles", handler.ArticleCreate)
-	e.DELETE("/api/:articleId", handler.ArticleDelete)
+	e.DELETE("/api/articles/:articleId", handler.ArticleDelete)
+	e.PATCH("/api/articles/:articleId", handler.ArticleUpdate)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"strings"
 
 	"go-tech-blog/model"
 	"go-tech-blog/repository"
@@ -109,16 +110,84 @@ func ArticleShow(c echo.Context) error {
 	return render(c, "article/show.html", data)
 }
 
+/*
+* Article Edit
+*/
 func ArticleEdit(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("articleId"))
 
+	article, err := repository.ArticleGetById(id)
+
+	if err != nil {
+		c.Logger().Error(err.Error())
+
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
 	data := map[string]interface{}{
-		"Message": "Article Edit",
-		"Now":     time.Now(),
-		"ID":      id,
+		"Article": article,
 	}
 
 	return render(c, "article/edit.html", data)
+}
+
+
+/*
+* ArticleUpdateOutput
+*/
+type ArticleUpdateOutput struct {
+	Article *model.Article
+	Message string
+	ValidationErrors []string
+}
+
+/*
+* Article Update
+*/
+func ArticleUpdate(c echo.Context) error {
+	// 送信元のパスから記事IDの取得
+	ref := c.Request().Referer()
+	refId := strings.Split(ref, "/")[4]
+
+	// リクエストURLのパスパラメータから記事IDを取得
+	reqId := c.Param("articleId")
+
+	if reqId != refId {
+		return c.JSON(http.StatusBadRequest, "")
+	}
+
+	var article model.Article
+
+	var out ArticleUpdateOutput
+
+	// リクエストパラメータの解釈に失敗した場合は400エラーを返す
+	if err := c.Bind(&article); err != nil {
+		return c.JSON(http.StatusBadRequest, out)
+	}
+
+	// バリデーション
+	if err := c.Validate(&article); err != nil {
+		out.ValidationErrors = article.ValidationErrors(err)
+
+		return c.JSON(http.StatusUnprocessableEntity, out)
+	}
+
+	articleId, _ := strconv.Atoi(reqId)
+
+	article.ID = articleId
+
+	_, err := repository.ArticleUpdate(&article)
+
+	// リクエストは正しいが、なんらかのエラーが発生した時は500エラー
+	if err != nil {
+		out.Message = err.Error()
+
+		return c.JSON(http.StatusInternalServerError, out)
+	}
+
+	out.Article = &article
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func ArticleDelete(c echo.Context) error {
