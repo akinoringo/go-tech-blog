@@ -73,3 +73,17 @@ func ArticleDelete(id int) error {
 
 	return tx.Commit()
 }
+
+func ArticleGetById(id int) (*model.Article, error) {
+	query := `SELECT *
+	FROM articles
+	WHERE id = ?;`
+
+	var article model.Article
+
+	if err := db.Get(&article, query, id); err != nil {
+		return nil, err
+	}
+
+	return &article, nil
+}

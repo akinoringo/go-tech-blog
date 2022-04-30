@@ -88,13 +88,22 @@ func ArticleNew(c echo.Context) error {
 	return render(c, "article/new.html", data)
 }
 
+/*
+* ArticleShow
+*/
 func ArticleShow(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("articleId"))
 
+	article, err := repository.ArticleGetById(id)
+
+	if err != nil {
+		c.Logger().Error(err.Error())
+
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
 	data := map[string]interface{}{
-		"Message": "Article Show",
-		"Now":     time.Now(),
-		"ID":      id,
+		"Article":article,
 	}
 
 	return render(c, "article/show.html", data)

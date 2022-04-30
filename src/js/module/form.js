@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     let status;
 
-    fetch(`/api/${url}`, {
+    fetch(`/api${url}`, {
       method: method,
       headers: {'X-CSRF-Token': csrfToken},
       body: fd,
