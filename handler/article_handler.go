@@ -55,6 +55,10 @@ func ArticleCreate(c echo.Context) error {
 }
 
 func ArticleIndex(c echo.Context) error {
+	if c.Request().URL.Path == "/articles" {
+		c.Redirect(http.StatusPermanentRedirect, "/")
+	}
+
 	articles, err := repository.ArticleListByCursor(0)
 
 	if err != nil {
@@ -62,8 +66,15 @@ func ArticleIndex(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	// 取得できた最後の記事のIDをカーソルとして設定
+	var cursor int
+	if len(articles) != 0 {
+		cursor = articles[len(articles)-1].ID
+	}
+
 	data := map[string]interface{}{
 		"Articles": articles,
+		"Cursor": cursor,
 	}
 
 	return render(c, "article/index.html", data)
@@ -78,7 +89,7 @@ func ArticleNew(c echo.Context) error {
 }
 
 func ArticleShow(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.Atoi(c.Param("articleId"))
 
 	data := map[string]interface{}{
 		"Message": "Article Show",
@@ -90,7 +101,7 @@ func ArticleShow(c echo.Context) error {
 }
 
 func ArticleEdit(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.Atoi(c.Param("articleId"))
 
 	data := map[string]interface{}{
 		"Message": "Article Edit",
@@ -102,7 +113,7 @@ func ArticleEdit(c echo.Context) error {
 }
 
 func ArticleDelete(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.Atoi(c.Param("articleId"))
 
 	if err := repository.ArticleDelete(id); err != nil {
 		c.Logger().Error(err.Error())
@@ -111,4 +122,19 @@ func ArticleDelete(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, fmt.Sprintf("Article %d is deleted", id))
+}
+
+func ArticleList(c echo.Context) error {
+	cursor, _ := strconv.Atoi(c.QueryParam("cursor"))
+
+	articles, err := repository.ArticleListByCursor(cursor)
+
+	if err != nil {
+
+		c.Logger().Error(err.Error())
+
+		return c.JSON(http.StatusInternalServerError, "")
+	}
+
+	return c.JSON(http.StatusOK, articles)
 }
