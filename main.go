@@ -14,6 +14,8 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+var authUser = os.Getenv("AUTH_USER")
+var authPassword = os.Getenv("AUTH_PASSWORD")
 var db *sqlx.DB
 var e = createMux()
 
@@ -21,16 +23,19 @@ func main() {
 	db = connectDB()
 	repository.SetDB(db)
 
+	auth := e.Group("")
+	auth.Use(basicAuth())
+
 	e.GET("/", handler.ArticleIndex)
 
 	e.GET("/articles", handler.ArticleIndex)
-	e.GET("/articles/new", handler.ArticleNew)
+	auth.GET("/articles/new", handler.ArticleNew)
 	e.GET("/articles/:articleId", handler.ArticleShow)
-	e.GET("/articles/:articleId/edit", handler.ArticleEdit)
+	auth.GET("/articles/:articleId/edit", handler.ArticleEdit)
 	e.GET("/api/articles", handler.ArticleList)
-	e.POST("/api/articles", handler.ArticleCreate)
-	e.DELETE("/api/articles/:articleId", handler.ArticleDelete)
-	e.PATCH("/api/articles/:articleId", handler.ArticleUpdate)
+	auth.POST("/api/articles", handler.ArticleCreate)
+	auth.DELETE("/api/articles/:articleId", handler.ArticleDelete)
+	auth.PATCH("/api/articles/:articleId", handler.ArticleUpdate)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
@@ -55,6 +60,7 @@ func createMux() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Gzip())
 	e.Use(middleware.CSRF())
+	e.Use(basicAuth())
 
 	e.Static("/css", "src/css")
 	e.Static("/js", "src/js")
@@ -72,4 +78,23 @@ type CustomValidator struct {
 // Validate
 func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
+}
+
+// Basic認証
+func basicAuth() echo.MiddlewareFunc {
+	var basicAuthValidator middleware.BasicAuthValidator
+
+	// basicAuthValidator という変数に、認証成功・認証失敗を判定する関数を代入します。
+	basicAuthValidator = func(username, password string, c echo.Context) (bool, error) {
+		// ユーザー名が "joe"、パスワードが "secret" の場合認証に成功します。
+		if username == authUser && password == authPassword {
+			return true, nil
+		}
+		return false, nil
+	}
+
+	// middleware パッケージの BasicAuth() 関数は、
+	// Basic 認証判定用の関数を引数に取り、MiddlewareFunc 型を返却します。
+	middlewareFunc := middleware.BasicAuth(basicAuthValidator)
+	return middlewareFunc
 }
